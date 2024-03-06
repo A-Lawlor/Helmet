@@ -18,6 +18,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r126/three.min.js" integrity="sha512-n8IpKWzDnBOcBhRlHirMZOUvEq2bLRMuJGjuVqbzUJwtTsgwOgK5aS0c1JA647XWYfqvXve8k3PtZdzpipFjgg==" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://unpkg.com/three@0.126.0/examples/js/controls/OrbitControls.js"></script>
     <script type="text/javascript">
         let scene, camera, renderer, helmet;
 
@@ -26,7 +27,7 @@
 
         function init() {
             scene = new THREE.Scene();
-            scene.background = new THREE.Color(0xffffff); // Set background color to white
+            scene.background = new THREE.Color(0x949494); 
 
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.z = 5;
@@ -34,13 +35,23 @@
             renderer = new THREE.WebGLRenderer({antialias: true});
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Optional for softer shadows
-
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             document.body.appendChild(renderer.domElement);
 
-            // Ambient light (does not cast shadow)
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            // OrbitControls initialization
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.update();
+
+            function animate() {
+                requestAnimationFrame(animate);
+                controls.update();
+                renderer.render(scene, camera);
+            }
+
+             // Updated lighting configuration
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
             scene.add(ambientLight);
+            
 
            // Ground plane
             const planeGeometry = new THREE.PlaneGeometry(500, 500);
@@ -51,34 +62,25 @@
             plane.receiveShadow = true;
             scene.add(plane);
 
-           // Point light
-            const pointLight = new THREE.PointLight(0xffffff, 0.6, 100);
-            pointLight.position.set(10, 10, 10);
-            pointLight.castShadow = true;
-            pointLight.shadow.mapSize.width = 2048; // Increase shadow resolution
-            pointLight.shadow.mapSize.height = 2048;
-            pointLight.shadow.camera.near = 0.1;
-            pointLight.shadow.camera.far = 100;
-            scene.add(pointLight);
-
-            // Directional light
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-            directionalLight.position.set(0, 1, 0);
-            directionalLight.castShadow = true;
-            // Adjust the shadow camera frustum
-            directionalLight.shadow.camera.left = -50;
-            directionalLight.shadow.camera.right = 50;
-            directionalLight.shadow.camera.top = 50;
-            directionalLight.shadow.camera.bottom = -50;
-            directionalLight.shadow.camera.near = 0.1;
-            directionalLight.shadow.camera.far = 100;
-            scene.add(directionalLight);
+            const light = new THREE.DirectionalLight(0xffffff, 2); // Example for a directional light
+            light.castShadow = true;
+            light.position.set(0, 10, 0); // Position the light
+            light.shadow.camera.near = 0.5;
+            light.shadow.camera.far = 50; // Adjust the far plane to control shadow length
+            light.shadow.camera.left = -10;
+            light.shadow.camera.right = 10;
+            light.shadow.camera.top = 10;
+            light.shadow.camera.bottom = -10;
+            scene.add(light);
 
             // Load Helmet Model
             const loader = new THREE.GLTFLoader();
             loader.load('static/model/scene.gltf', function (gltf) {
                 helmet = gltf.scene;
-                helmet.position.y = 0.6; // Move the helmet up
+                helmet.scale.set(0.7, 0.7, 0.7); // Scale the helmet down
+                helmet.position.set(0, 0, 0); // Reposition as necessary
+                helmet.position.y += 0.5; // Raise the helmet up by 1 unit
+
                 helmet.traverse(function (node) {
                     if (node.isMesh) {
                         node.castShadow = true;
