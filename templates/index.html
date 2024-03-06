@@ -2,25 +2,25 @@
 <html>
 <head>
     <title>3D Helmet Viewer</title>
+    <link rel="stylesheet" type="css/" href="style.css">
     <style>
         body { margin: 0; }
         canvas { width: 100%; height: 100% }
+        .controls { position: absolute; top: 10px; left: 10px; }
     </style>
 </head>
 <body>
-    <div>
-        <input type="number" id="quatX" placeholder="Quaternion X">
-        <input type="number" id="quatY" placeholder="Quaternion Y">
-        <input type="number" id="quatZ" placeholder="Quaternion Z">
-        <input type="number" id="quatW" placeholder="Quaternion W">
-        <button onclick="applyQuaternion()">Apply Rotation</button>
+    <div class="controls">
+        <input type="file" id="fileInput" accept=".csv">
+        <button onclick="uploadFile()">Upload</button>
+        <input type="range" id="scrubber" min="0" max="0" value="0" style="width: 300px;">
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r126/three.min.js" integrity="sha512-n8IpKWzDnBOcBhRlHirMZOUvEq2bLRMuJGjuVqbzUJwtTsgwOgK5aS0c1JA647XWYfqvXve8k3PtZdzpipFjgg==" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/three@0.126.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://unpkg.com/three@0.126.0/examples/js/controls/OrbitControls.js"></script>
     <script type="text/javascript">
-        let scene, camera, renderer, helmet;
+        let scene, camera, renderer, helmet, controls, quaternionData = [];
 
         init();
         animate();
@@ -115,7 +115,38 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        window.applyQuaternion = applyQuaternion;
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const content = e.target.result;
+                processCSV(content);
+            };
+
+            reader.readAsText(file);
+        }
+
+        function processCSV(csvData) {
+            quaternionData = csvData.split('\n').map(function(line) {
+                const parts = line.split(';');
+                return {
+                    time: parts[0],
+                    quaternion: parts.slice(1).map(Number)
+                };
+            });
+
+            document.getElementById('scrubber').max = quaternionData.length - 1;
+        }
+
+        document.getElementById('scrubber').addEventListener('input', function(e) {
+            const index = e.target.value;
+            const data = quaternionData[index];
+            if (data && helmet) {
+                helmet.quaternion.set(data.quaternion[0], data.quaternion[1], data.quaternion[2], data.quaternion[3]);
+            }
+        });
     </script>
 </body>
 </html>
