@@ -2,7 +2,7 @@ body {
     margin: 0; 
     font-family: Arial, sans-serif;
     background-color: #333;
-    color: #ffa500; /* Dark orange text */
+    color: rgb(232, 10, 10); /* Dark orange text */
 }
 canvas { 
     width: 100%; 
@@ -34,10 +34,10 @@ input[type="range"] {
 }
 input[type="file"], button {
     margin-bottom: 10px;
-    color: #ffa500; /* Dark orange text */
+    color: #000000; /* Dark orange text */
 }
 button {
-    background-color: #444;
+    background-color: rgb(205, 21, 21);
     border: 1px solid #ffa500;
     padding: 5px 10px;
     border-radius: 4px;
@@ -47,3 +47,4 @@ button {
 button:hover {
     background-color: #555;
 }
+
